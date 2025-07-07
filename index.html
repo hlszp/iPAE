@@ -817,9 +817,18 @@
                     <div class="flex-grow">
                         <div id="reactor" class="asset-content active w-full h-full">
                             <div class="grid grid-cols-12 gap-6 h-full">
-                                <div class="col-span-12 lg:col-span-9 bg-white p-6 rounded-xl shadow-md flex flex-col">
-                                    <h3 class="text-xl font-semibold mb-4 text-gray-700">催化剂活性衰减曲线 (当前周期)</h3>
-                                    <div class="chart-container flex-grow"><canvas id="catalystChart"></canvas></div>
+                                <div class="col-span-12 lg:col-span-9 flex flex-col gap-6">
+                                    <!-- 催化剂活性衰减曲线 -->
+                                    <div class="bg-white p-6 rounded-xl shadow-md flex flex-col">
+                                        <h3 class="text-xl font-semibold mb-4 text-gray-700">催化剂活性衰减曲线 (当前周期)</h3>
+                                        <div class="chart-container flex-grow" style="height: 300px;"><canvas id="catalystChart"></canvas></div>
+                                    </div>
+
+                                    <!-- 催化剂酸碱性分析 -->
+                                    <div class="bg-white p-6 rounded-xl shadow-md flex flex-col">
+                                        <h3 class="text-xl font-semibold mb-4 text-gray-700">催化剂酸碱性分布曲线</h3>
+                                        <div class="chart-container flex-grow" style="height: 250px;"><canvas id="catalystAcidityChart"></canvas></div>
+                                    </div>
                                 </div>
                                 <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
                                     <div class="ai-panel p-4 rounded-xl shadow-md">
@@ -830,6 +839,29 @@
                                     <div class="bg-white p-4 rounded-xl shadow-md text-center"><h4 class="text-gray-500 font-medium">当前活性</h4><p class="text-3xl font-bold text-blue-600 mt-1">92.1%</p></div>
                                     <div class="bg-white p-4 rounded-xl shadow-md text-center"><h4 class="text-gray-500 font-medium">失活速率 (k_d)</h4><p class="text-3xl font-bold text-yellow-600 mt-1">0.0015/天</p></div>
                                     <div class="bg-white p-4 rounded-xl shadow-md text-center"><h4 class="text-gray-500 font-medium">预计剩余寿命</h4><p class="text-3xl font-bold text-green-600 mt-1">55天</p></div>
+
+                                    <!-- 催化剂酸碱性摘要 -->
+                                    <div class="bg-white p-4 rounded-xl shadow-md">
+                                        <h3 class="text-lg font-semibold text-gray-700 mb-3">酸碱性分析</h3>
+                                        <div class="space-y-2 text-sm">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">弱酸位点</span>
+                                                <span class="font-medium text-green-600">85.2%</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">中强酸位点</span>
+                                                <span class="font-medium text-yellow-600">12.8%</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">强酸位点</span>
+                                                <span class="font-medium text-red-600">2.0%</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">酸性总量</span>
+                                                <span class="font-medium text-blue-600">1.85 mmol/g</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -3269,6 +3301,293 @@ ${logData}
                     },
                     options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
                 },
+                catalystChart: {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 31}, (_, i) => `第 ${i+1} 天`),
+                        datasets: [{
+                            label: '催化剂活性 (%)',
+                            data: Array.from({length: 31}, (_, i) => {
+                                const baseActivity = 98;
+                                const decayRate = 0.0015;
+                                const activity = baseActivity * Math.exp(-decayRate * i);
+                                return Math.max(activity + (Math.random() - 0.5) * 0.3, 85);
+                            }),
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                min: 85,
+                                max: 100,
+                                title: { display: true, text: '催化剂活性 (%)' }
+                            }
+                        }
+                    }
+                },
+                catalystAcidityChart: {
+                    type: 'line',
+                    data: {
+                        labels: ['100', '150', '200', '250', '300', '350', '400', '450', '500', '550', '600'],
+                        datasets: [{
+                            label: '新鲜催化剂',
+                            data: [0.05, 0.12, 0.28, 0.45, 0.68, 0.85, 0.92, 0.78, 0.52, 0.28, 0.08],
+                            borderColor: 'rgba(34, 197, 94, 1)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: '使用后催化剂',
+                            data: [0.03, 0.08, 0.18, 0.32, 0.48, 0.62, 0.68, 0.58, 0.38, 0.22, 0.06],
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: { display: true, text: '脱附温度 (°C)' }
+                            },
+                            y: {
+                                title: { display: true, text: '酸量 (mmol/g)' },
+                                min: 0,
+                                max: 1.0
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' mmol/g';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                compressorCurveChart: {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: '基准性能曲线 (Baseline)',
+                            data: [
+                                {x: 600, y: 110}, {x: 700, y: 108}, {x: 800, y: 105}, {x: 900, y: 100},
+                                {x: 1000, y: 94}, {x: 1100, y: 87}, {x: 1200, y: 78}, {x: 1300, y: 68},
+                                {x: 1400, y: 55}, {x: 1500, y: 40}, {x: 1600, y: 22}, {x: 1700, y: 8}
+                            ],
+                            borderColor: 'rgba(34, 197, 94, 1)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            tension: 0.1,
+                            fill: false,
+                            pointRadius: 0,
+                        }, {
+                            label: '实际性能曲线 (Degraded)',
+                            data: [
+                                {x: 600, y: 91.3}, {x: 700, y: 89.6}, {x: 800, y: 87.2}, {x: 900, y: 83.0},
+                                {x: 1000, y: 78.0}, {x: 1100, y: 72.2}, {x: 1200, y: 64.7}, {x: 1300, y: 56.4},
+                                {x: 1400, y: 45.7}, {x: 1500, y: 33.2}, {x: 1600, y: 18.3}, {x: 1700, y: 6.6}
+                            ],
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.1,
+                            fill: false,
+                            pointRadius: 0,
+                        }, {
+                            label: '喘振线 (Surge Line)',
+                            data: [
+                                {x: 600, y: 115}, {x: 650, y: 110}, {x: 700, y: 105}, {x: 750, y: 98},
+                                {x: 800, y: 90}, {x: 850, y: 80}, {x: 900, y: 68}, {x: 950, y: 52}
+                            ],
+                            borderColor: 'rgba(220, 38, 38, 1)',
+                            borderDash: [10, 5],
+                            tension: 0.1,
+                            fill: false,
+                            pointRadius: 0,
+                        }, {
+                            label: '阻塞线 (Choke Line)',
+                            data: [
+                                {x: 1650, y: 25}, {x: 1700, y: 15}, {x: 1750, y: 8}, {x: 1800, y: 3},
+                                {x: 1850, y: 1}, {x: 1900, y: 0}
+                            ],
+                            borderColor: 'rgba(245, 158, 11, 1)',
+                            borderDash: [5, 10],
+                            tension: 0.1,
+                            fill: false,
+                            pointRadius: 0,
+                        }, {
+                            label: '当前操作点',
+                            data: [{x: 1350, y: 56.4}],
+                            backgroundColor: 'rgba(59, 130, 246, 1)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                            showLine: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: { display: true, text: '流量 (m³/h)' },
+                                min: 500,
+                                max: 2000
+                            },
+                            y: {
+                                title: { display: true, text: '扬程 (m)' },
+                                min: 0,
+                                max: 120
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        if (context.dataset.label === '当前操作点') {
+                                            return `${context.dataset.label}: 流量 ${context.parsed.x} m³/h, 扬程 ${context.parsed.y.toFixed(1)} m`;
+                                        }
+                                        return context.dataset.label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                compressorComparisonChart: {
+                    type: 'radar',
+                    data: {
+                        labels: ['效率', '流量', '扬程', '振动', '温度', '喘振裕度'],
+                        datasets: [{
+                            label: 'C-101A',
+                            data: [82, 85, 88, 95, 92, 75],
+                            borderColor: 'rgba(34, 197, 94, 1)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                            pointBackgroundColor: 'rgba(34, 197, 94, 1)'
+                        }, {
+                            label: 'C-101B',
+                            data: [78, 82, 85, 88, 90, 80],
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)'
+                        }, {
+                            label: 'C-102',
+                            data: [85, 90, 92, 85, 88, 85],
+                            borderColor: 'rgba(139, 92, 246, 1)',
+                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                            pointBackgroundColor: 'rgba(139, 92, 246, 1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    stepSize: 20
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                },
+                compressorEfficiencyChart: {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 30}, (_, i) => `-${30-i}d`),
+                        datasets: [{
+                            label: '多变效率偏差 (%)',
+                            data: Array.from({length: 30}, (_, i) => {
+                                const baseDrift = -0.3 - (i/30) * 2.2;
+                                const noise = (Math.random() - 0.5) * 0.4;
+                                return Math.max(baseDrift + noise, -3.5);
+                            }),
+                            borderColor: 'rgba(220, 38, 38, 1)',
+                            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                title: { display: true, text: '效率偏差 (%)' }
+                            }
+                        }
+                    }
+                },
+                reconciliationChart: {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 24}, (_, i) => `${i.toString().padStart(2, '0')}:00`),
+                        datasets: [{
+                            label: '原始数据 (FT-105A)',
+                            data: [105.8, 108.2, 104.6, 109.1, 106.3, 111.5, 107.9, 105.2, 110.8, 106.7,
+                                   113.2, 105.9, 108.7, 106.4, 114.5, 110.1, 107.8, 118.9, 109.3, 111.7,
+                                   108.2, 112.4, 106.1, 109.5],
+                            borderColor: 'rgba(234, 88, 12, 0.8)',
+                            backgroundColor: 'rgba(234, 88, 12, 0.1)',
+                            tension: 0.1,
+                            pointRadius: 2
+                        }, {
+                            label: '校正后数据',
+                            data: [106.2, 106.4, 106.3, 106.6, 106.5, 106.8, 106.7, 106.9, 107.0, 107.1,
+                                   107.2, 107.1, 107.0, 107.3, 107.4, 107.6, 107.5, 107.7, 107.9, 107.8,
+                                   108.0, 108.1, 108.2, 108.3],
+                            borderColor: 'rgba(22, 163, 74, 1)',
+                            backgroundColor: 'rgba(22, 163, 74, 0.2)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                title: { display: true, text: '流量 (t/h)' }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + ' t/h';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 instrumentHealthChart: {
                     type: 'doughnut',
                     data: {
@@ -4714,6 +5033,7 @@ ${logData}
                                 renderChart('compressorEfficiencyChart');
                             } else if(activeAsset === 'reactor'){
                                 renderChart('catalystChart');
+                                renderChart('catalystAcidityChart');
                             } else if(activeAsset === 'exchanger'){
                                 renderChart('foulingChart');
                             }
