@@ -1039,7 +1039,7 @@
                                    <div class="ai-panel p-4 rounded-xl shadow-md">
                                         <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center"><svg class="w-6 h-6 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>AI 智能洞察</h3>
                                         <p class="text-sm text-gray-600 mb-4">分析工况分布与切换频率，评估装置稳定性，并识别异常或非计划的工况切换事件。</p>
-                                        <button onclick="callGeminiAPI(promptGenerators.condition(), this)" class="ai-button w-full bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700">获取AI分析</button>
+                                        <button class="ai-button w-full bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700" data-section-id="condition">获取AI分析</button>
                                    </div>
                                    <div class="bg-white p-4 rounded-xl shadow-md flex-grow flex flex-col">
                                        <h3 class="text-lg font-semibold text-gray-700 mb-4">24小时工况分布</h3>
@@ -1499,11 +1499,57 @@
                     geminiModalTitle.textContent = "AI 数据质量评估";
                     return `你是一位过程数据分析专家。图表展示了流量计FT-105A的原始测量数据和经过物料平衡校正后的数据。原始数据有明显的噪声和偏移。请分析：1. **校正效果解读**: 校正后的数据相比原始数据有哪些改善？这对于计算准确的物料消耗有何意义？2. **仪表健康诊断**: 从原始数据的形态（如噪声大、漂移）来看，这个流量计可能存在什么问题（例如，传感器噪声、变送器故障）？3. **数据价值**: 为什么说使用校正后的数据进行KPI计算和过程监控是至关重要的？`;
                 },
+                dashboard: () => {
+                    geminiModalTitle.textContent = "AI 智能驾驶舱解读";
+                    const yieldVal = document.querySelector('.kpi-card:nth-child(1) p.text-4xl').textContent;
+                    const yieldComp = document.querySelector('.kpi-card:nth-child(1) p.text-sm').textContent;
+                    const outputVal = document.querySelector('.kpi-card:nth-child(2) p.text-4xl').textContent;
+                    const energyVal = document.querySelector('.kpi-card:nth-child(3) p.text-4xl').textContent;
+                    const peRatio = document.querySelector('.kpi-card:nth-child(4) p.text-4xl').textContent;
+                    return `你是一位经验丰富的MTO工厂运营经理。当前管理驾驶舱显示核心指标如下：\n- **综合碳收率**: ${yieldVal} (${yieldComp})\n- **今日烯烃总产量**: ${outputVal}\n- **单位产品综合能耗**: ${energyVal}\n- **P/E比**: ${peRatio}\n\n请基于以上数据，结合24小时关键绩效趋势图，生成一份运营分析摘要，包括：\n1. **总体评价**: 当前工厂的整体运营状态（优秀、平稳、需关注）是什么？\n2. **亮点识别**: 哪些KPI表现突出？可能的原因是什么？\n3. **风险预警**: 哪个或哪些KPI显示出潜在问题或恶化趋势？需要立即关注什么？\n4. **决策建议**: 基于当前状况，你建议管理层下一步的关注重点应该放在哪里（例如，是继续提升产量，还是优化能耗，或是调整产品结构）？`;
+                },
+                'condition-management': () => {
+                    geminiModalTitle.textContent = "AI 运行工况分析";
+                    const status = document.getElementById('current-condition-status').textContent;
+                    const duration = document.getElementById('current-condition-duration').textContent;
+                    const flow = document.getElementById('methanol-flow-rate').textContent;
+                    return `你是一位资深的MTO工艺工程师。当前实时工况为【${status}】，已${duration}，甲醇进料量为 ${flow} t/h。请结合24小时工况历史分布图，分析：\n1. **当前工况解读**: 这个工况对装置的产率、选择性和稳定性通常意味着什么？\n2. **历史对比分析**: 对比历史数据，当前工况的持续时间是偏长还是偏短？这反映了什么操作策略或市场需求的变化？\n3. **潜在风险提示**: 在【${status}】工况下，最需要警惕的潜在操作风险是什么（例如，催化剂失活加快、产品质量波动、设备逼近约束等）？`;
+                },
                 condition: () => {
-                    geminiModalTitle.textContent = "AI 工况分析报告";
-                    const activeRules = rules.filter(r => r.active).length;
-                    const totalRules = rules.length;
-                    return `你是一位MTO工艺运行工况专家。当前系统配置了${totalRules}个工况识别规则，其中${activeRules}个处于激活状态。根据24小时工况历史图表显示的工况分布（稳定高负荷50%、稳定低负荷29.2%、开车/升负荷12.5%等），请分析：1. **工况稳定性评估**: 当前的工况分布是否合理？频繁的工况切换对装置运行有何影响？2. **异常工况识别**: 从工况切换日志中是否发现异常的非计划停车或工况切换？3. **优化建议**: 为了提高装置的稳定性和经济效益，在工况管理方面有哪些改进建议？4. **规则优化**: 现有的工况识别规则是否需要调整或新增？`;
+                    geminiModalTitle.textContent = "AI 运行工况分析";
+
+                    // 从工况分布图获取数据
+                    const distributionChart = Chart.getChart("conditionDistributionChart");
+                    let distributionData = "未知";
+                    if (distributionChart) {
+                        const labels = distributionChart.data.labels;
+                        const data = distributionChart.data.datasets[0].data;
+                        distributionData = labels.map((label, index) => `${label}: ${data[index]}%`).join('，');
+                    }
+
+                    // 从工况切换日志获取数据
+                    const logRows = document.querySelectorAll('#condition-log-body tr');
+                    let logData = "";
+                    logRows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if(cells.length === 4){
+                            logData += `从【${cells[1].textContent}】切换到【${cells[2].textContent}】，持续${cells[3].textContent}；\n`;
+                        }
+                    });
+                    if(logData === "") logData = "无切换记录。";
+
+                    return `你是一位资深的MTO工艺运行分析专家。请根据以下实时监控数据，提供一份专业的工况分析报告：
+
+**1. 24小时工况分布概览:**
+${distributionData}
+
+**2. 近期工况切换日志:**
+${logData}
+
+**请深入分析:**
+- **运行稳定性评估:** 基于工况分布数据，当前装置的运行稳定性如何？是否存在过于频繁的工况切换？这种模式对催化剂寿命和设备损耗有何潜在影响？
+- **关键切换事件分析:** 日志中是否有值得特别关注的切换事件（例如，从高负荷直接到异常停车）？请推断其可能的原因和对生产的影响。
+- **操作优化建议:** 结合工况分布和切换日志，你认为在操作上有哪些可以优化的空间，以延长稳定运行周期，减少非计划波动？`;
                 }
             };
 
