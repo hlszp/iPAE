@@ -111,6 +111,10 @@
                 <a href="#foundation" data-section="foundation" class="nav-item flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-200 rounded-md">
                    <span class="sidebar-icon mr-3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a9.375 9.375 0 0 0 9.375-9.375H2.625A9.375 9.375 0 0 0 12 18.75Z" /></svg></span>数据预处理</a>
             </nav>
+            <div class="p-4 text-center text-xs text-gray-500 border-t">
+                <p class="font-semibold">ZHILIAN Inc.</p>
+                <p>&copy; 2025 All Rights Reserved.</p>
+            </div>
         </aside>
 
         <!-- Main content -->
@@ -4008,6 +4012,8 @@
             document.getElementById('report-date-selector').value = today;
             document.getElementById('report-month-selector').value = today.substring(0, 7);
 
+            let demoDuration = 4.50; // For demonstration: initial duration in hours
+
             // 当前工况数据更新函数
             function updateCurrentConditionCard() {
                 // 模拟实时数据
@@ -4050,27 +4056,20 @@
 
                 if (!statusElement || !durationElement) return;
 
-                let status, duration, hours;
+                let newStatus;
+                if (flow >= 155) newStatus = '稳定高负荷';
+                else if (flow >= 140) newStatus = '稳定中负荷';
+                else if (flow >= 120) newStatus = '开车升负荷';
+                else if (flow >= 100) newStatus = '稳定低负荷';
+                else newStatus = '停车降负荷';
 
-                if (flow >= 155) {
-                    status = '稳定高负荷';
-                    hours = 4.2 + Math.random() * 0.5; // 4.2-4.7小时
-                } else if (flow >= 140) {
-                    status = '稳定中负荷';
-                    hours = 2.8 + Math.random() * 0.8; // 2.8-3.6小时
-                } else if (flow >= 120) {
-                    status = '开车升负荷';
-                    hours = 0.5 + Math.random() * 1.0; // 0.5-1.5小时
-                } else if (flow >= 100) {
-                    status = '稳定低负荷';
-                    hours = 1.2 + Math.random() * 0.8; // 1.2-2.0小时
-                } else {
-                    status = '停车降负荷';
-                    hours = 0.2 + Math.random() * 0.3; // 0.2-0.5小时
-                }
+                // For demonstration purposes, we just update the status text
+                // but use a fixed-increment duration.
+                statusElement.textContent = newStatus;
 
-                statusElement.textContent = status;
-                durationElement.textContent = `持续 ${hours.toFixed(1)} 小时`;
+                // Assuming a 5-second refresh interval for the demo
+                demoDuration += (5 / 3600); // Add 5 seconds worth of hours
+                durationElement.textContent = `持续 ${demoDuration.toFixed(2)} 小时`;
             }
 
             // 启动实时数据更新
